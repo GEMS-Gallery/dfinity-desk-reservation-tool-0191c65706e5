@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, CircularProgress, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, CircularProgress, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, Input } from '@mui/material';
 import { MapContainer, ImageOverlay, Marker, Popup } from 'react-leaflet';
 import { backend } from '../../declarations/backend';
 
@@ -23,6 +23,8 @@ const FloorMap = () => {
   const [selectedDesk, setSelectedDesk] = useState<Desk | null>(null);
   const [loading, setLoading] = useState(true);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,6 +65,41 @@ const FloorMap = () => {
     setShowConfirmation(false);
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+      setUploadedFile(file);
+    } else {
+      alert('Please upload a valid .jpg or .png file');
+    }
+  };
+
+  const handleUploadConfirm = async () => {
+    if (uploadedFile) {
+      try {
+        const arrayBuffer = await uploadedFile.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const result = await backend.uploadFloorMap(
+          `floor_${Date.now()}`,
+          uploadedFile.name,
+          uint8Array
+        );
+        if ('ok' in result) {
+          alert('Floor map uploaded successfully');
+          const floorsResult = await backend.getFloors();
+          setFloors(floorsResult);
+        } else {
+          alert(`Failed to upload floor map: ${result.err}`);
+        }
+      } catch (error) {
+        console.error('Error uploading floor map:', error);
+        alert('An error occurred while uploading the floor map');
+      }
+    }
+    setShowUploadDialog(false);
+    setUploadedFile(null);
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
@@ -76,6 +113,9 @@ const FloorMap = () => {
       <Typography variant="h4" gutterBottom>
         Floor Map
       </Typography>
+      <Button variant="contained" onClick={() => setShowUploadDialog(true)} sx={{ mb: 2 }}>
+        Upload Floor Map
+      </Button>
       {floors.length > 0 && (
         <MapContainer center={[50, 50]} zoom={2} style={{ height: '500px', width: '100%' }}>
           <ImageOverlay
@@ -108,6 +148,18 @@ const FloorMap = () => {
           <Button onClick={() => setShowConfirmation(false)}>Cancel</Button>
           <Button onClick={handleConfirmReservation} color="primary">
             Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={showUploadDialog} onClose={() => setShowUploadDialog(false)}>
+        <DialogTitle>Upload Floor Map</DialogTitle>
+        <DialogContent>
+          <Input type="file" onChange={handleFileUpload} accept="image/jpeg,image/png" />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowUploadDialog(false)}>Cancel</Button>
+          <Button onClick={handleUploadConfirm} color="primary" disabled={!uploadedFile}>
+            Upload
           </Button>
         </DialogActions>
       </Dialog>
