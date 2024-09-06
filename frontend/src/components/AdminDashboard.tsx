@@ -18,6 +18,7 @@ const AdminDashboard = () => {
   const [x, setX] = useState('');
   const [y, setY] = useState('');
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchReservations();
@@ -29,6 +30,7 @@ const AdminDashboard = () => {
       setReservations(result);
     } catch (error) {
       console.error('Error fetching reservations:', error);
+      setError('Failed to load reservations. Please try again later.');
     }
   };
 
@@ -43,7 +45,7 @@ const AdminDashboard = () => {
         setX('');
         setY('');
       } else {
-        alert(`Failed to add desk: ${result.err}`);
+        throw new Error(result.err);
       }
     } catch (error) {
       console.error('Error adding desk:', error);
@@ -60,13 +62,24 @@ const AdminDashboard = () => {
         alert(`Desk ${isBlocked ? 'blocked' : 'unblocked'} successfully`);
         fetchReservations();
       } else {
-        alert(`Failed to ${isBlocked ? 'block' : 'unblock'} desk: ${result.err}`);
+        throw new Error(result.err);
       }
     } catch (error) {
       console.error('Error blocking/unblocking desk:', error);
       alert('An error occurred while blocking/unblocking the desk');
     }
   };
+
+  if (error) {
+    return (
+      <Box p={3}>
+        <Typography color="error">{error}</Typography>
+        <Button onClick={() => window.location.reload()} variant="contained" sx={{ mt: 2 }}>
+          Retry
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box p={3}>

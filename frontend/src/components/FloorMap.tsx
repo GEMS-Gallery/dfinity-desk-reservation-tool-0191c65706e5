@@ -25,6 +25,7 @@ const FloorMap = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,6 +36,7 @@ const FloorMap = () => {
         setDesks(desksResult);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError('Failed to load floor map data. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -77,6 +79,7 @@ const FloorMap = () => {
   const handleUploadConfirm = async () => {
     if (uploadedFile) {
       try {
+        setLoading(true);
         const arrayBuffer = await uploadedFile.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
         const result = await backend.uploadFloorMap(
@@ -89,21 +92,34 @@ const FloorMap = () => {
           const floorsResult = await backend.getFloors();
           setFloors(floorsResult);
         } else {
-          alert(`Failed to upload floor map: ${result.err}`);
+          throw new Error(result.err);
         }
       } catch (error) {
         console.error('Error uploading floor map:', error);
-        alert('An error occurred while uploading the floor map');
+        setError('Failed to upload floor map. Please try again.');
+      } finally {
+        setLoading(false);
+        setShowUploadDialog(false);
+        setUploadedFile(null);
       }
     }
-    setShowUploadDialog(false);
-    setUploadedFile(null);
   };
 
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p={3}>
+        <Typography color="error">{error}</Typography>
+        <Button onClick={() => window.location.reload()} variant="contained" sx={{ mt: 2 }}>
+          Retry
+        </Button>
       </Box>
     );
   }

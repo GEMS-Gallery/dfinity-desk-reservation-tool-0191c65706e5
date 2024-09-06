@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, Typography, CircularProgress, Button } from '@mui/material';
 import { Line } from 'react-chartjs-2';
 import { backend } from '../../declarations/backend';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
@@ -15,6 +15,7 @@ interface OccupancyReport {
 const Reports = () => {
   const [occupancyData, setOccupancyData] = useState<OccupancyReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOccupancyReport = async () => {
@@ -25,6 +26,7 @@ const Reports = () => {
         setOccupancyData(result);
       } catch (error) {
         console.error('Error fetching occupancy report:', error);
+        setError('Failed to load occupancy report. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -34,7 +36,7 @@ const Reports = () => {
   }, []);
 
   const chartData = {
-    labels: occupancyData.map(data => new Date(Number(data.date)).toLocaleDateString()),
+labels: occupancyData.map(data => new Date(Number(data.date)).toLocaleDateString()),
     datasets: [
       {
         label: 'Occupancy Rate',
@@ -63,6 +65,17 @@ const Reports = () => {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p={3}>
+        <Typography color="error">{error}</Typography>
+        <Button onClick={() => window.location.reload()} variant="contained" sx={{ mt: 2 }}>
+          Retry
+        </Button>
       </Box>
     );
   }

@@ -14,6 +14,7 @@ interface Reservation {
 const Reservations = () => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchReservations = async () => {
@@ -22,6 +23,7 @@ const Reservations = () => {
         setReservations(result);
       } catch (error) {
         console.error('Error fetching reservations:', error);
+        setError('Failed to load reservations. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -36,7 +38,7 @@ const Reservations = () => {
       if ('ok' in result) {
         alert('Desk marked as preferred!');
       } else {
-        alert(`Failed to mark desk as preferred: ${result.err}`);
+        throw new Error(result.err);
       }
     } catch (error) {
       console.error('Error marking preferred desk:', error);
@@ -48,6 +50,17 @@ const Reservations = () => {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p={3}>
+        <Typography color="error">{error}</Typography>
+        <Button onClick={() => window.location.reload()} variant="contained" sx={{ mt: 2 }}>
+          Retry
+        </Button>
       </Box>
     );
   }

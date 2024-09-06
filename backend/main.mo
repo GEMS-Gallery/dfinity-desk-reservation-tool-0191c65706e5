@@ -14,6 +14,7 @@ import Error "mo:base/Error";
 import Option "mo:base/Option";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
+import Debug "mo:base/Debug";
 
 actor {
   type Desk = {
@@ -59,9 +60,17 @@ actor {
   let reservationsMap = HashMap.fromIter<Text, Reservation>(reservations.vals(), 10, Text.equal, Text.hash);
 
   public func uploadFloorMap(id: Text, name: Text, map: Blob) : async Result.Result<Text, Text> {
-    let newFloor : Floor = { id = id; name = name; map = map };
-    floors := Array.append(floors, [newFloor]);
-    #ok("Floor map uploaded successfully")
+    try {
+      if (Blob.toArray(map).size() == 0) {
+        return #err("Empty image file");
+      };
+      let newFloor : Floor = { id = id; name = name; map = map };
+      floors := Array.append(floors, [newFloor]);
+      #ok("Floor map uploaded successfully")
+    } catch (e) {
+      Debug.print("Error uploading floor map: " # Error.message(e));
+      #err("An error occurred while uploading the floor map")
+    }
   };
 
   public func addDesk(id: Text, number: Nat, x: Nat, y: Nat) : async Result.Result<(), Text> {
