@@ -1,0 +1,51 @@
+type Result_1 = 
+ variant {
+   err: text;
+   ok;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: text;
+ };
+type Reservation = 
+ record {
+   date: int;
+   deskId: text;
+   id: text;
+   isRecurring: bool;
+   recurringDays: vec nat;
+   userId: text;
+ };
+type OccupancyReport = 
+ record {
+   date: int;
+   occupiedDesks: nat;
+   totalDesks: nat;
+ };
+type Floor = 
+ record {
+   id: text;
+   map: blob;
+   name: text;
+ };
+type Desk = 
+ record {
+   id: text;
+   isBlocked: bool;
+   number: nat;
+   x: nat;
+   y: nat;
+ };
+service : {
+  addDesk: (text, nat, nat, nat) -> (Result_1);
+  blockDesk: (text, bool) -> (Result_1);
+  getAllReservations: () -> (vec Reservation) query;
+  getDesks: () -> (vec Desk) query;
+  getFloors: () -> (vec Floor) query;
+  getOccupancyReport: (int, int) -> (vec OccupancyReport) query;
+  getReservations: (text) -> (vec Reservation) query;
+  makeReservation: (text, int, bool, vec nat) -> (Result_1);
+  markPreferredDesk: (text) -> (Result_1);
+  uploadFloorMap: (text, text, blob) -> (Result);
+}
