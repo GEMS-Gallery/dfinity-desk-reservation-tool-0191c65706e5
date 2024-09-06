@@ -34,6 +34,7 @@ export type Result_1 = { 'ok' : null } |
 export interface _SERVICE {
   'addDesk' : ActorMethod<[string, bigint, bigint, bigint], Result_1>,
   'blockDesk' : ActorMethod<[string, boolean], Result_1>,
+  'deleteFloorMap' : ActorMethod<[string], Result>,
   'getAllReservations' : ActorMethod<[], Array<Reservation>>,
   'getDesks' : ActorMethod<[], Array<Desk>>,
   'getFloors' : ActorMethod<[], Array<Floor>>,

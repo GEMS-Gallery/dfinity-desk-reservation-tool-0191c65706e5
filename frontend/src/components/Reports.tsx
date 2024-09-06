@@ -36,7 +36,7 @@ const Reports = () => {
   }, []);
 
   const chartData = {
-labels: occupancyData.map(data => new Date(Number(data.date)).toLocaleDateString()),
+    labels: occupancyData.map(data => new Date(Number(data.date)).toLocaleDateString()),
     datasets: [
       {
         label: 'Occupancy Rate',

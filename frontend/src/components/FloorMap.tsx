@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Box, CircularProgress, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, Input } from '@mui/material';
+import { Box, CircularProgress, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, Input, List, ListItem, ListItemText, IconButton } from '@mui/material';
 import { MapContainer, ImageOverlay, Marker, Popup } from 'react-leaflet';
 import { backend } from '../../declarations/backend';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface Desk {
   id: string;
@@ -28,22 +29,23 @@ const FloorMap = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const floorsResult = await backend.getFloors();
-        const desksResult = await backend.getDesks();
-        setFloors(floorsResult);
-        setDesks(desksResult);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError('Failed to load floor map data. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const floorsResult = await backend.getFloors();
+      const desksResult = await backend.getDesks();
+      setFloors(floorsResult);
+      setDesks(desksResult);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError('Failed to load floor map data. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeskClick = (desk: Desk) => {
     setSelectedDesk(desk);
@@ -89,8 +91,7 @@ const FloorMap = () => {
         );
         if ('ok' in result) {
           alert('Floor map uploaded successfully');
-          const floorsResult = await backend.getFloors();
-          setFloors(floorsResult);
+          fetchData();
         } else {
           throw new Error(result.err);
         }
@@ -102,6 +103,24 @@ const FloorMap = () => {
         setShowUploadDialog(false);
         setUploadedFile(null);
       }
+    }
+  };
+
+  const handleDeleteFloorMap = async (id: string) => {
+    try {
+      setLoading(true);
+      const result = await backend.deleteFloorMap(id);
+      if ('ok' in result) {
+        alert('Floor map deleted successfully');
+        fetchData();
+      } else {
+        throw new Error(result.err);
+      }
+    } catch (error) {
+      console.error('Error deleting floor map:', error);
+      setError('Failed to delete floor map. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -155,6 +174,19 @@ const FloorMap = () => {
           ))}
         </MapContainer>
       )}
+      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
+        Uploaded Floor Maps
+      </Typography>
+      <List>
+        {floors.map((floor) => (
+          <ListItem key={floor.id}>
+            <ListItemText primary={floor.name} />
+            <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteFloorMap(floor.id)}>
+              <DeleteIcon />
+            </IconButton>
+          </ListItem>
+        ))}
+      </List>
       <Dialog open={showConfirmation} onClose={() => setShowConfirmation(false)}>
         <DialogTitle>Confirm Reservation</DialogTitle>
         <DialogContent>

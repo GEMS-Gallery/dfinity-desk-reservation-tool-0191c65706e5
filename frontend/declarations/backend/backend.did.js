@@ -1,5 +1,6 @@
 export const idlFactory = ({ IDL }) => {
   const Result_1 = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text });
+  const Result = IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text });
   const Reservation = IDL.Record({
     'id' : IDL.Text,
     'isRecurring' : IDL.Bool,
@@ -25,10 +26,10 @@ export const idlFactory = ({ IDL }) => {
     'totalDesks' : IDL.Nat,
     'occupiedDesks' : IDL.Nat,
   });
-  const Result = IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text });
   return IDL.Service({
     'addDesk' : IDL.Func([IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat], [Result_1], []),
     'blockDesk' : IDL.Func([IDL.Text, IDL.Bool], [Result_1], []),
+    'deleteFloorMap' : IDL.Func([IDL.Text], [Result], []),
     'getAllReservations' : IDL.Func([], [IDL.Vec(Reservation)], ['query']),
     'getDesks' : IDL.Func([], [IDL.Vec(Desk)], ['query']),
     'getFloors' : IDL.Func([], [IDL.Vec(Floor)], ['query']),

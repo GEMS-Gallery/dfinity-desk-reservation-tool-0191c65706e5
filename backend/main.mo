@@ -73,6 +73,24 @@ actor {
     }
   };
 
+  public func deleteFloorMap(id: Text) : async Result.Result<Text, Text> {
+    try {
+      let index = Array.indexOf<Floor>({ id = id; name = ""; map = Blob.fromArray([]) }, floors, func(a, b) { a.id == b.id });
+      switch (index) {
+        case (?i) {
+          floors := Array.tabulate<Floor>(floors.size() - 1, func(j) {
+            if (j < i) { floors[j] } else { floors[j + 1] }
+          });
+          #ok("Floor map deleted successfully")
+        };
+        case (null) { #err("Floor map not found") };
+      };
+    } catch (e) {
+      Debug.print("Error deleting floor map: " # Error.message(e));
+      #err("An error occurred while deleting the floor map")
+    }
+  };
+
   public func addDesk(id: Text, number: Nat, x: Nat, y: Nat) : async Result.Result<(), Text> {
     let desk: Desk = {
       id = id;

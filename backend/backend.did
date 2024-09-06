@@ -40,6 +40,7 @@ type Desk =
 service : {
   addDesk: (text, nat, nat, nat) -> (Result_1);
   blockDesk: (text, bool) -> (Result_1);
+  deleteFloorMap: (text) -> (Result);
   getAllReservations: () -> (vec Reservation) query;
   getDesks: () -> (vec Desk) query;
   getFloors: () -> (vec Floor) query;
